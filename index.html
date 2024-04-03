@@ -1,1 +1,130 @@
-hello world
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D-Day List Manage</title>
+<style>
+    @font-face {
+        font-family: 'DNFBitBitv2';
+        font-style: normal;
+        font-weight: 400;
+        src: url('https://cdn.df.nexon.com/img/common/font/DNFBitBitv2.otf') format('opentype');
+    }
+
+    body {
+        font-family: 'DNFBitBitv2', sans-serif;
+        background-color: transparent;
+    }
+
+    #countdown {
+        font-size: 29px;
+        text-align: center;
+        margin-top: 50px;
+        transition: opacity 0.5s ease-in-out;
+    }
+
+    .d-day {
+        color: rgb(255, 59, 48);
+    }
+    
+    .other-text {
+        color: rgb(28, 28, 30);
+        font-family: 'DNFBitBitv2', sans-serif;
+    }
+
+    .copy-button {
+        margin-left: 10px;
+        font-family: 'DNFBitBitv2', sans-serif;
+    }
+</style>
+</head>
+<body>
+
+<div id="countdown"></div>
+
+<!-- 새로운 D-Day 이벤트를 추가하는 폼 -->
+<form id="addEventForm">
+    <label for="eventDate" style="font-family: 'DNFBitBitv2', sans-serif;">이벤트 날짜:</label>
+    <input type="date" id="eventDate" name="eventDate">
+    <label for="eventLabel" style="font-family: 'DNFBitBitv2', sans-serif;">이벤트 이름:</label>
+    <input type="text" id="eventLabel" name="eventLabel">
+    <button type="button" onclick="addEvent()" style="font-family: 'DNFBitBitv2', sans-serif;">이벤트 추가</button>
+</form>
+
+<!-- 삭제 버튼이 있는 D-Day 이벤트 목록 -->
+<ul id="eventList"></ul>
+
+<script>
+     // 디데이 목록 정의
+    var dDayList = [
+        // 기존의 D-Day 이벤트
+    ];
+
+    // 새로운 D-Day 이벤트를 추가하는 함수
+    function addEvent() {
+        var eventDate = document.getElementById('eventDate').value;
+        var eventLabel = document.getElementById('eventLabel').value;
+        if (eventDate && eventLabel) {
+            // 시간을 T00:00:00+09:00으로 설정
+            var newEvent = { date: new Date(eventDate + 'T00:00:00+09:00'), label: eventLabel };
+            dDayList.push(newEvent);
+            updateEventList();
+            addCopyButton(newEvent);
+        } else {
+            alert('이벤트 날짜와 이름을 모두 입력해주세요.');
+        }
+    }
+
+    // D-Day 이벤트를 삭제하는 함수
+    function deleteEvent(index) {
+        dDayList.splice(index, 1);
+        updateEventList();
+    }
+
+    // 페이지에 표시되는 D-Day 이벤트 목록을 업데이트하는 함수
+    function updateEventList() {
+        var eventList = document.getElementById('eventList');
+        eventList.innerHTML = '';
+        dDayList.forEach(function(event, index) {
+            var listItem = document.createElement('li');
+            listItem.innerHTML = '{ date: new Date(\'' + event.date.toISOString().replace('T15:00:00.000Z', 'T00:00:00+09:00') + '\'), label: \'' + event.label + '\' } <button onclick="deleteEvent(' + index + ')" style="font-family: \'DNFBitBitv2\', sans-serif;">삭제</button>';
+            eventList.appendChild(listItem);
+            addCopyButton(event);
+        });
+    }
+
+    // 이벤트 복사 버튼을 추가하는 함수
+    function addCopyButton(event) {
+        var listItem = document.createElement('li');
+        var copyButton = document.createElement('button');
+        copyButton.innerHTML = '복사';
+        copyButton.className = 'copy-button';
+        copyButton.onclick = function() {
+            copyToClipboard('{ date: new Date(\'' + event.date.toISOString().replace('T15:00:00.000Z', 'T00:00:00+09:00') + '\'), label: \'' + event.label + '\' }');
+        };
+        listItem.appendChild(copyButton);
+        document.getElementById('eventList').appendChild(listItem);
+    }
+
+    // 클립보드에 텍스트 복사하는 함수
+    function copyToClipboard(text) {
+        var dummy = document.createElement("textarea");
+        document.body.appendChild(dummy);
+        dummy.value = text;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+        alert('이벤트가 클립보드에 복사되었습니다.');
+    }
+
+    // 페이지 로드시 D-Day 계산 및 이벤트 목록 업데이트
+    window.onload = function() {
+        setInterval(getDday, 5*1000); // N*1초마다 업데이트
+        getDday(); // 초기 업데이트
+        updateEventList(); // 이벤트 목록 업데이트
+    };
+</script>
+
+</body>
+</html>
